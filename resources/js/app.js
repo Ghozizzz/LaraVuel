@@ -6,11 +6,37 @@
 
 require('./bootstrap');
 
-window.Vue = require('vue');
-
+import { Form, HasError, AlertError } from 'vform';
+import moment from 'moment';
+import VueProgressBar from 'vue-progressbar';
+import swal from 'sweetalert2';
 import VueRouter from 'vue-router';
+import { values } from 'lodash';
+
+window.Vue = require('vue');
+window.Form = Form;
+window.swal = swal;
+
+Vue.component(HasError.name, HasError)
+Vue.component(AlertError.name, AlertError)
 
 Vue.use(VueRouter);
+Vue.use(VueProgressBar,{
+    color: 'rgb(143,255,199)',
+    failedColor: 'red',
+    height: '3px'
+})
+const toast = swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    onOpen: (toast) => {
+      toast.addEventListener('mouseenter', swal.stopTimer)
+      toast.addEventListener('mouseleave', swal.resumeTimer)
+    }
+})
 
 const routes = [
     { path: '/dashboard', component: require('./components/Dashboard.vue').default },
@@ -23,6 +49,17 @@ const router = new VueRouter({
     routes,
     linkActiveClass: 'active'
 })
+
+Vue.filter('upperText', function(text){
+    return text.charAt(0).toUpperCase() + text.slice(1);
+});
+
+Vue.filter('datetime', function(date){
+    return moment(date).format('MMMM Do YYYY, h:mm:ss a');
+})
+
+window.toast = swal;
+window.Fire = new Vue();
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
