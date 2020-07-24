@@ -40,6 +40,7 @@ const toast = swal.mixin({
 
 const routes = [
     { path: '/dashboard', component: require('./components/Dashboard.vue').default },
+    { path: '/developer', component: require('./components/Developer.vue').default },
     { path: '/profile', component: require('./components/Profile.vue').default },
     { path: '/users', component: require('./components/Users.vue').default }
 ]
@@ -56,7 +57,24 @@ Vue.filter('upperText', function(text){
 
 Vue.filter('datetime', function(date){
     return moment(date).format('MMMM Do YYYY, h:mm:ss a');
-})
+});
+
+//laravel passport
+Vue.component(
+    'passport-clients',
+    require('./components/passport/Clients.vue').default
+);
+
+Vue.component(
+    'passport-authorized-clients',
+    require('./components/passport/AuthorizedClients.vue').default
+);
+
+Vue.component(
+    'passport-personal-access-tokens',
+    require('./components/passport/PersonalAccessTokens.vue').default
+);
+//end laravel passport
 
 window.toast = swal;
 window.Fire = new Vue();
