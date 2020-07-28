@@ -128,4 +128,16 @@ class UserController extends Controller
         $user->update($request->all());
         return ['message' => 'Profile Updated'];
     }
+
+    public function findUser()
+    {
+        if($search = \Request::get('q')){
+            $users = User::where(function($query) use ($search){
+                $query->where('name','LIKE',"%$search%")
+                    ->orWhere('email','LIKE',"%$search%")
+                    ->orWhere('type','LIKE',"%$search%");
+            })->paginate(5);
+        }
+        return $users;
+    }
 }

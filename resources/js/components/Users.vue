@@ -135,10 +135,14 @@
         },
         methods: {
           getResults(page = 1) {
-            axios.get('api/user?page=' + page)
+            if(this.$parent.search === ""){
+              axios.get('api/user?page=' + page)
               .then(response => {
-                this.users = response.data;
+              this.users = response.data;
               });
+            }else{
+              Fire.$emit('searching', page);
+            }
           },
           addUser(){
             this.addmode = true;
@@ -219,6 +223,20 @@
           }
         },
         created() {
+            Fire.$on('searching', (page = 1) => {
+              let query = this.$parent.search;
+              if(query != ''){
+                axios.get('api/findUser?q=' + query + '&page=' +page)
+                .then((data) => {
+                  this.users =  data.data;
+                })
+                .catch(() => {
+                  this.$Progress.fail();
+                });
+              }else{
+                this.loadData();
+              }
+            });
             this.loadData();
             Fire.$on('Done', () => {
               this.loadData();
