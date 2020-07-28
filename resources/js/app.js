@@ -12,13 +12,40 @@ import VueProgressBar from 'vue-progressbar';
 import swal from 'sweetalert2';
 import VueRouter from 'vue-router';
 import { values } from 'lodash';
+import Gate from './Gate';
 
 window.Vue = require('vue');
 window.Form = Form;
 window.swal = swal;
+window.toast = swal;
+window.Fire = new Vue();
 
-Vue.component(HasError.name, HasError)
-Vue.component(AlertError.name, AlertError)
+Vue.prototype.$gate = new Gate(window.user);
+Vue.component(HasError.name, HasError);
+Vue.component(AlertError.name, AlertError);
+Vue.component('pagination', require('laravel-vue-pagination'));
+
+//laravel passport
+Vue.component(
+    'passport-clients',
+    require('./components/passport/Clients.vue').default
+);
+
+Vue.component(
+    'passport-authorized-clients',
+    require('./components/passport/AuthorizedClients.vue').default
+);
+
+Vue.component(
+    'passport-personal-access-tokens',
+    require('./components/passport/PersonalAccessTokens.vue').default
+);
+//end laravel passport
+
+Vue.component(
+    'not-found',
+    require('./components/NotFound.vue').default
+);
 
 Vue.use(VueRouter);
 Vue.use(VueProgressBar,{
@@ -58,26 +85,6 @@ Vue.filter('upperText', function(text){
 Vue.filter('datetime', function(date){
     return moment(date).format('MMMM Do YYYY, h:mm:ss a');
 });
-
-//laravel passport
-Vue.component(
-    'passport-clients',
-    require('./components/passport/Clients.vue').default
-);
-
-Vue.component(
-    'passport-authorized-clients',
-    require('./components/passport/AuthorizedClients.vue').default
-);
-
-Vue.component(
-    'passport-personal-access-tokens',
-    require('./components/passport/PersonalAccessTokens.vue').default
-);
-//end laravel passport
-
-window.toast = swal;
-window.Fire = new Vue();
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue

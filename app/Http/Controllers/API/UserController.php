@@ -16,7 +16,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        return User::latest()->paginate(10);
+        $this->authorize('isAdmin');
+        return User::latest()->paginate(5);
     }
 
     /**
@@ -63,6 +64,10 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if(!empty($request->password)){
+            $request->merge(['password' => Hash::make($request['password'])]);
+        }
+
         $this->validate($request,[
             'name' => 'required|string|max:191',
             'email' => 'required|string|email|max:191|unique:users,email,'.$request->id,
@@ -81,6 +86,7 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
+        $this->authorize('isAdmin');
         $user = User::findOrFail($id);
         $user->delete();
 
@@ -95,6 +101,31 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         $user = auth('api')->user();
+
+        $this->validate($request,[
+            'name' => 'required|string|max:191',
+            'email' => 'required|string|email|max:191|unique:users,email,'.$request->id,
+            'password' => 'sometimes|min:8'
+        ]);
+        if($request->photo != $user->photo){
+            // $name = time().'.'.explode('/', explode(':', substr($request->photo, 0, strpos($request->photo, ';')))[1])[1];
+            $name = time().'.'.explode('/', mime_content_type($request->photo))[1];
+
+            $image = \Image::make($request->photo)->save(public_path('img/profile/').$name);
+
+            $request->merge(['photo' => $name]);
+
+            $oldPhoto = public_path('img/profile/').$user->photo;
+            if(file_exists($oldPhoto)){
+                @unlink($oldPhoto);
+            }
+        }
+
+        if(!empty($request->password)){
+            $request->merge(['password' => Hash::make($request['password'])]);
+        }
+
+        $user->update($request->all());
         return ['message' => 'Profile Updated'];
     }
 }

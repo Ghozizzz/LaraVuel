@@ -12,7 +12,7 @@
                         <h5 class="widget-user-desc text-right">Web Designer</h5>
                     </div>
                     <div class="widget-user-image">
-                        <img class="img-circle" src="" alt="User Avatar">
+                        <img class="img-circle" :src="getProfilePhoto()" alt="User Avatar">
                     </div>
                     <div class="card-footer">
                         <div class="row">
@@ -47,13 +47,13 @@
                 <div class="card">
                     <div class="card-header p-2">
                         <ul class="nav nav-pills">
-                        <li class="nav-item"><a class="nav-link active" href="#activity" data-toggle="tab">Activity</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Settings</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#activity" data-toggle="tab">Activity</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="#settings" data-toggle="tab">Settings</a></li>
                         </ul>
                     </div><!-- /.card-header -->
                     <div class="card-body">
                         <div class="tab-content">
-                            <div class="active tab-pane" id="activity">
+                            <div class="tab-pane" id="activity">
                                 <!-- Post -->
                                 <div class="post">
                                 <div class="user-block">
@@ -92,24 +92,27 @@
                                 <!-- /.post -->
                             </div>
                         </div>
-                        <div class="tab-pane" id="settings">
+                        <div class="active tab-pane" id="settings">
                             <form class="form-horizontal">
                             <div class="form-group row">
                                 <label for="inputName" class="col-sm-2 col-form-label">Name</label>
                                 <div class="col-sm-10">
-                                <input type="text" v-model="form.name" class="form-control" id="inputName" placeholder="Name">
+                                <input type="text" v-model="form.name" class="form-control" :class="{ 'is-invalid': form.errors.has('name') }" id="inputName" placeholder="Name">
+                                <has-error :form="form" field="name"></has-error>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label for="inputEmail" class="col-sm-2 col-form-label">Email</label>
                                 <div class="col-sm-10">
-                                <input type="email" v-model="form.email" class="form-control" id="inputEmail" placeholder="Email">
+                                <input type="email" v-model="form.email" class="form-control" :class="{ 'is-invalid': form.errors.has('email') }" id="inputEmail" placeholder="Email">
+                                <has-error :form="form" field="email"></has-error>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label for="inputBio" class="col-sm-2 col-form-label">Bio</label>
                                 <div class="col-sm-10">
                                 <textarea class="form-control" v-model="form.bio" id="inputBio" placeholder="Bio"></textarea>
+                                <has-error :form="form" field="bio"></has-error>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -123,6 +126,7 @@
                                 <label for="thePassword" class="col-sm-2 col-form-label">Password</label>
                                 <div class="col-sm-10">
                                 <input type="password" class="form-control" id="thePassword" placeholder="Password">
+                                <has-error :form="form" field="password"></has-error>
                                 <label>
                                     (leave empty if not changing)
                                 </label>
@@ -177,17 +181,32 @@
                 // console.log('uploading');
                 let file = e.target.files[0];
                 let reader = new FileReader();
-                reader.onloadend = (file) => {
-                    this.form.photo = reader.result;
+                if(file['size'] < 2097152){
+                    reader.onloadend = (file) => {
+                        this.form.photo = reader.result;
+                    }
+                    reader.readAsDataURL(file);
+                }else{
+                    toast.fire({
+                        type: 'Error',
+                        title: 'Oops...',
+                        text: 'Your file is more than 2mb'
+                    });
                 }
-                reader.readAsDataURL(file);
             },
             updateProfile(){
-                axios.put("api/profile")
+                this.$Progress.start();
+                this.form.put("api/profile")
                 .then(()=>{
-
+                    this.$Progress.finish();
                 })
-                .catch();
+                .catch(() => {
+                    this.$Progress.fail();
+                });
+            },
+            getProfilePhoto(){
+                let prefix = (this.form.photo.match(/\//) ? '' : '/img/profile/');
+                return prefix + this.form.photo;
             }
         },
         created(){
